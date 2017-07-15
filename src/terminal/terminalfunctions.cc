@@ -559,7 +559,15 @@ static Function func_CSI_DECSTR( CSI, "!p", CSI_DECSTR );
 /* xterm uses an Operating System Command to set the window title */
 void Dispatcher::OSC_dispatch( const Parser::OSC_End *act __attribute((unused)), Framebuffer *fb )
 {
-  if ( OSC_string.size() >= 1 ) {
+  /* handle osc copy clipboard sequence 52;c; */
+  if ( OSC_string.size() >= 5 && OSC_string[ 0 ] == L'5' &&
+       OSC_string[ 1 ] == L'2' && OSC_string[ 2 ] == L';' &&
+       OSC_string[ 3 ] == L'c' && OSC_string[ 4 ] == L';') {
+      Terminal::Framebuffer::title_type clipboard(
+              OSC_string.begin() + 5, OSC_string.end() );
+      fb->set_clipboard( clipboard );
+  /* handle osc terminal title sequence */
+  } else if ( OSC_string.size() >= 1 ) {
     long cmd_num = -1;
     int offset = 0;
     if ( OSC_string[ 0 ] == L';' ) {
